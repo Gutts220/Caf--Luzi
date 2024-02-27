@@ -128,4 +128,104 @@ GROUP BY C.id_cliente;
 -- Borrar un dato de una lista
 
 /*DELETE FROM Productos 
-WHERE Id_productos=1; 
+WHERE Id_productos=1;*/
+
+
+-------------------------- Segunda Entrega ---------------------------------
+
+-- Crear funciones y vistas
+DELIMITER $$
+
+-- Función para calcular el total de un pedido
+CREATE FUNCTION CalcularTotalPedido(pedido_id INT)
+RETURNS DECIMAL
+DETERMINISTIC
+BEGIN
+    DECLARE total DECIMAL;
+    SELECT SUM(Precio_producto * Cantidad_productos) INTO total FROM Pedidos WHERE Id_pedido = pedido_id;
+    RETURN total;
+END$$
+
+-- Función para buscar clientes por nombre o apellido
+CREATE FUNCTION BuscarCliente(
+    IN nombre_apellido VARCHAR(100)
+)
+RETURNS TABLE(Id_cliente INT, Nombre_cliente VARCHAR(50), Apellido_cliente VARCHAR(50), Email_cliente VARCHAR(50))
+BEGIN
+    RETURN (
+        SELECT Id_cliente, Nombre_cliente, Apellido_cliente, Email_cliente
+        FROM Clientes
+        WHERE CONCAT(Nombre_cliente, ' ', Apellido_cliente) LIKE CONCAT('%', nombre_apellido, '%')
+    );
+END$$
+
+
+-- Vista para mostrar detalles del pedido con información del producto
+CREATE VIEW VistaDetallesPedido AS
+SELECT D.Id_pedido, P.Nombre_producto, D.Cantidad_productos, D.Precio_producto
+FROM Pedidos D
+JOIN Productos P ON D.Id_producto = P.Id_producto;
+
+-- Vista para mostrar clientes con la cantidad de pedidos realizados
+CREATE VIEW VistaClientesConPedidos AS
+SELECT C.Id_cliente, CONCAT(C.Nombre_cliente, ' ', C.Apellido_cliente) as Nombre_completo, COUNT(P.Id_pedido) as Cantidad_pedidos
+FROM Clientes C
+LEFT JOIN Pedidos P ON C.Id_cliente = P.Id_cliente
+GROUP BY C.Id_cliente$$
+
+-- Vista para mostrar empleados que ingresaron recientemente
+CREATE VIEW VistaEmpleadosIngresoReciente AS
+SELECT Id_empleado, Apellido_empleado, Nombre_empleado, Fecha_ingreso_empleado
+FROM Empleados
+ORDER BY Fecha_ingreso_empleado DESC;
+
+-- Vista para mostrar productos agotados en el inventario
+CREATE VIEW VistaProductosAgotados AS
+SELECT Id_producto, Nombre_producto, Tipo_producto, Precio_producto, Stock_producto
+FROM Productos
+WHERE Stock_producto = 0;
+
+-- Vista para mostrar detalles completos de todos los pedidos
+CREATE VIEW VistaPedidosDetallados AS
+SELECT P.Id_pedido, C.Nombre_cliente, C.Apellido_cliente, P.Tipo_producto, P.Precio_producto, P.Fecha_pedido, P.Cantidad_productos
+FROM Pedidos P
+JOIN Clientes C ON P.Id_cliente = C.Id_cliente;
+
+DELIMITER ;
+
+-- Stored Procedures y Triggers
+DELIMITER $$
+
+-- Stored Procedure para registrar un nuevo cliente
+CREATE PROCEDURE RegistrarNuevoCliente(
+    IN nombre_cliente VARCHAR(50),
+    IN apellido_cliente VARCHAR(50),
+    IN email_cliente VARCHAR(50)
+)
+BEGIN
+    INSERT INTO Clientes (Nombre_cliente, Apellido_cliente, Email_cliente) VALUES (nombre_cliente, apellido_cliente, email_cliente);
+END$$
+
+-- Stored Procedure para actualizar el stock de un producto
+CREATE PROCEDURE ActualizarStockProducto(
+    IN producto_id INT,
+    IN nueva_cantidad INT
+)
+BEGIN
+    UPDATE Productos
+    SET Stock_producto = nueva_cantidad
+    WHERE Id_producto = producto_id;
+END$$
+
+-- Trigger para actualizar el stock después de un pedido
+CREATE TRIGGER ActualizarStockDespuesDePedido
+AFTER INSERT ON Pedidos
+FOR EACH ROW
+BEGIN
+    UPDATE Productos
+    SET Stock_producto = Stock_producto - NEW.Cantidad_productos
+    WHERE Id_producto = NEW.Id_producto;
+END$$
+
+DELIMITER ;
+
