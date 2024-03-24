@@ -55,7 +55,69 @@ CREATE TABLE Empleados (
     PRIMARY KEY(Id_empleado)
 );
 
+CREATE TABLE Ventas (
+    id_venta INT PRIMARY KEY AUTO_INCREMENT,
+    fecha_venta DATE,
+    total_venta DECIMAL(10, 2)
+);
 
+CREATE TABLE CambiosInventario (
+    id_cambio INT PRIMARY KEY AUTO_INCREMENT,
+    id_producto INT,
+    fecha_cambio DATE,
+    cantidad_anterior INT,
+    cantidad_nueva INT,
+    FOREIGN KEY (id_producto) REFERENCES Productos(id_producto)
+);
+
+CREATE TABLE PagosClientes (
+    id_pago INT PRIMARY KEY AUTO_INCREMENT,
+    id_cliente INT,
+    fecha_pago DATE,
+    monto_pago DECIMAL(10, 2),
+    FOREIGN KEY (id_cliente) REFERENCES Clientes(id_cliente)
+);
+
+CREATE TABLE CategoriasProductos (
+    id_categoria INT PRIMARY KEY,
+    nombre_categoria VARCHAR(50)
+);
+
+CREATE TABLE MetodosPago (
+    id_metodo_pago INT PRIMARY KEY,
+    nombre_metodo VARCHAR(50)
+);
+
+CREATE TABLE Proyectos (
+    id_proyecto INT PRIMARY KEY,
+    nombre_proyecto VARCHAR(50),
+    descripcion VARCHAR(100),
+    fecha_inicio DATE,
+    fecha_fin DATE
+);
+
+CREATE TABLE CategoriasClientes (
+    id_categoria_cliente INT PRIMARY KEY,
+    nombre_categoria_cliente VARCHAR(50),
+    descripcion VARCHAR(100)
+);
+
+CREATE TABLE VentasPorMetodoPago (
+    id_venta INT PRIMARY KEY,
+    id_metodo_pago INT,
+    fecha_venta DATE,
+    total_venta_metodo_pago DECIMAL(10, 2),
+    FOREIGN KEY (id_metodo_pago) REFERENCES MetodosPago(id_metodo_pago)
+);
+
+CREATE TABLE VentasPorProducto (
+    id_venta INT PRIMARY KEY,
+    id_producto INT,
+    fecha_venta DATE,
+    cantidad_vendida INT,
+    total_venta_producto DECIMAL(10, 2),
+    FOREIGN KEY (id_producto) REFERENCES Productos(id_producto)
+);
 
 
 -- Cargar datos en las tablas
@@ -79,6 +141,55 @@ INSERT INTO Proveedores (Id_proveedor, Nombre_proveedor, Email_proveedor, Telefo
 (1, 'Proveedor1', 'proveedor1@example.com', '123-456-7890'),
 (2, 'Proveedor2', 'proveedor2@example.com', '987-654-3210');
 
+INSERT INTO Ventas (fecha_venta, total_venta) VALUES
+('2024-01-25', 20.5),
+('2024-01-26', 15.75);
+
+INSERT INTO CambiosInventario (id_producto, fecha_cambio, cantidad_anterior, cantidad_nueva) VALUES
+(1, '2024-01-25', 100, 98),
+(2, '2024-01-26', 50, 47);
+
+INSERT INTO PagosClientes (id_cliente, fecha_pago, monto_pago) VALUES
+(1, '2024-01-25', 10.25),
+(2, '2024-01-26', 7.50);
+
+INSERT INTO CategoriasProductos (id_categoria, nombre_categoria) VALUES
+(1, 'Café en Grano'),
+(2, 'Café Molido'),
+(3, 'Té Negro'),
+(4, 'Té Verde'),
+(5, 'Té de Hierbas'),
+(6, 'Accesorios de Café'),
+(7, 'Máquinas de Café');
+
+INSERT INTO MetodosPago (id_metodo_pago, nombre_metodo) VALUES
+(1, 'Efectivo'),
+(2, 'Tarjeta de Crédito'),
+(3, 'Transferencia Bancaria'),
+(4, 'PayPal'),
+(5, 'Criptomoneda');
+
+INSERT INTO Proyectos (id_proyecto, nombre_proyecto, descripcion, fecha_inicio, fecha_fin) VALUES
+(1, 'Desarrollo de Sitio Web', 'Crear un sitio web de comercio electrónico para la venta de productos de café y té.', '2024-01-01', '2024-06-30'),
+(2, 'Campaña de Marketing', 'Realizar una campaña publicitaria para promocionar los productos de la empresa en redes sociales y medios digitales.', '2024-03-15', '2024-04-30'),
+(3, 'Renovación de Local', 'Realizar renovaciones en el local físico para mejorar la experiencia del cliente.', '2024-02-01', '2024-05-15');
+
+INSERT INTO CategoriasClientes (id_categoria_cliente, nombre_categoria_cliente, descripcion) VALUES
+(1, 'Clientes Habituales', 'Clientes que realizan compras frecuentes y tienen membresías o programas de fidelización.'),
+(2, 'Clientes Corporativos', 'Empresas o negocios que realizan compras a gran escala para eventos o regalos corporativos.'),
+(3, 'Clientes Eventuales', 'Clientes ocasionales que realizan compras esporádicas.');
+
+INSERT INTO VentasPorProducto (id_venta, id_producto, fecha_venta, cantidad_vendida, total_venta_producto) VALUES
+(1, 1, '2024-01-01', 2, 5.00),
+(2, 2, '2024-01-02', 3, 4.50),
+(3, 1, '2024-01-03', 1, 2.50),
+(4, 3, '2024-01-03', 2, 6.00);
+
+INSERT INTO VentasPorMetodoPago (id_venta, id_metodo_pago, fecha_venta, total_venta_metodo_pago) VALUES
+(1, 1, '2024-01-01', 10.00),
+(2, 2, '2024-01-02', 15.00),
+(3, 1, '2024-01-03', 7.50),
+(4, 3, '2024-01-03', 20.00);
 -- Consulta simple con WHERE
 SELECT * FROM Productos WHERE Tipo_producto = 'Café';
 
